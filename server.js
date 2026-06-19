@@ -10,6 +10,7 @@ app.use(express.json());
 let authToken = null;
 let depotsData = [];
 let vehiclesData = [];
+let notificationsData = [];
 
 // Logging Middleware
 const Log = async (stack, level, packageName, message) => {
@@ -138,12 +139,39 @@ const fetchVehicles = async () => {
   }
 };
 
+const fetchNotifications = async () => {
+  try {
+    if (!authToken) {
+      await Log("backend", "warn", "notification-fetch", "No auth token available");
+      return false;
+    }
+
+    await Log("backend", "info", "notification-fetch", "Fetching notifications from test server");
+    
+    const response = await fetch(`${process.env.TEST_SERVER}/evaluation-service/notifications`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${authToken}` }
+    });
+
+    const data = await response.json();
+    notificationsData = data.notifications || [];
+    await Log("backend", "info", "notification-fetch", `Fetched ${notificationsData.length} notifications`);
+    console.log(`✅ Fetched ${notificationsData.length} notifications`);
+    return true;
+  } catch (error) {
+    await Log("backend", "error", "notification-fetch", `Failed to fetch notifications: ${error.message}`);
+    console.error("❌ Notification fetch failed:", error.message);
+    return false;
+  }
+};
+
 // Initialize server data on startup
 const initializeServer = async () => {
   console.log("🚀 Initializing server...");
   await authenticateWithServer();
   await fetchDepots();
   await fetchVehicles();
+  await fetchNotifications();
   console.log("✅ Server initialization complete");
 };
 
@@ -200,8 +228,8 @@ app.get('/evaluation-service/vehicles', authenticateToken, async (req, res) => {
 // Campus Notifications API (GET)
 app.get('/evaluation-service/notifications', authenticateToken, async (req, res) => {
   try {
-    await Log("backend", "info", "notification-api", "Fetching notifications data");
-    res.status(200).json({ notifications });
+    await Log("backend", "info", "notification-api", "Serving notifications data");
+    res.status(200).json({ notifications: notificationsData });
   } catch (error) {
     await Log("backend", "error", "notification-api", error.message);
     res.status(500).json({ error: 'Internal server error' });
