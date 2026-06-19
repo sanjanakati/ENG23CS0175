@@ -165,6 +165,25 @@ const fetchNotifications = async () => {
   }
 };
 
+const notificationTypeWeight = {
+  Placement: 3,
+  Result: 2,
+  Event: 1
+};
+
+const getNotificationWeight = (notification) => notificationTypeWeight[notification.Type] || 0;
+const parseNotificationTimestamp = (notification) => new Date(notification.Timestamp).getTime() || 0;
+
+const getPriorityNotifications = (notifications, limit = 10) => {
+  return [...notifications]
+    .sort((a, b) => {
+      const weightDiff = getNotificationWeight(b) - getNotificationWeight(a);
+      if (weightDiff !== 0) return weightDiff;
+      return parseNotificationTimestamp(b) - parseNotificationTimestamp(a);
+    })
+    .slice(0, limit);
+};
+
 // Initialize server data on startup
 const initializeServer = async () => {
   console.log("🚀 Initializing server...");
@@ -232,6 +251,18 @@ app.get('/evaluation-service/notifications', authenticateToken, async (req, res)
     res.status(200).json({ notifications: notificationsData });
   } catch (error) {
     await Log("backend", "error", "notification-api", error.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Priority Notifications API (GET)
+app.get('/evaluation-service/notifications/priority', authenticateToken, async (req, res) => {
+  try {
+    await Log("backend", "info", "priority-notification-api", "Serving priority notifications");
+    const topNotifications = getPriorityNotifications(notificationsData, 10);
+    res.status(200).json({ notifications: topNotifications });
+  } catch (error) {
+    await Log("backend", "error", "priority-notification-api", error.message);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

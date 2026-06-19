@@ -53,6 +53,8 @@ The server starts on `http://localhost:3000`.
   - Protected route, returns vehicle data
 - `GET /evaluation-service/notifications`
   - Protected route, returns notifications data
+- `GET /evaluation-service/notifications/priority`
+  - Protected route, returns top 10 priority notifications by weight and recency
 - `POST /schedule`
   - Calculates the best vehicle schedule using available mechanic hours
 
