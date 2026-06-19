@@ -77,6 +77,31 @@ The server starts on `http://localhost:3000`.
 }
 ```
 
+### Example `GET /evaluation-service/notifications/priority` request
+```bash
+curl -H "Authorization: Bearer <token>" http://localhost:3000/evaluation-service/notifications/priority
+```
+
+### Example priority response
+```json
+{
+  "notifications": [
+    {
+      "ID": "...",
+      "Type": "Placement",
+      "Message": "CSX Corporation hiring",
+      "Timestamp": "2026-04-22 17:51:18"
+    },
+    {
+      "ID": "...",
+      "Type": "Result",
+      "Message": "mid-sem",
+      "Timestamp": "2026-04-22 17:51:30"
+    }
+  ]
+}
+```
+
 ## Screenshot Evidence
 The `assets` folder includes screenshot files showing the running server and scheduler output.
 
